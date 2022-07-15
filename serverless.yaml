@@ -1,0 +1,51 @@
+service:
+  name: contacts-service
+
+custom:
+  environment: ${opt:stage, 'dev'}
+  profile: ${opt:stage, 'dev'}
+  path: contact
+  version: ${opt:version, 'api/v1'}
+  serverless-offline:
+    httpPort: 3000
+  webpack:
+    includeModules: true
+    isLocal: false
+  optimize:
+    external: ["swagger-ui-dist"]  
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-east-1
+  environment: ${file(config/env.yaml):${self:custom.environment}}
+package:
+  include: config/*.yaml
+
+functions:
+  main:
+    handler: src/handler/lambda.handler
+    events:
+      - http:
+          method: any
+          path: /{proxy+}
+      - http:
+          cors: true
+          method: post
+          path: ${self:custom.path}
+      - http:
+          cors: true
+          method: put
+          path: ${self:custom.path}/{id}
+      - http:
+          cors: true
+          method: get
+          path: ${self:custom.path}/{id}
+      - http:
+          cors: true
+          method: delete
+          path: ${self:custom.path}/{id}
+      - http:
+          cors: true
+          method: get
+          path: ${self:custom.path}/all
